@@ -43,14 +43,21 @@ def create_preprocessors(data_source):
     return numeric_imputer, non_numeric_imputer, std_scaler
 
 def preprocess_data(data, numeric_imputer, non_numeric_imputer, std_scaler):
+
     data = initial_preprocess(data)
 
     numeric_cols = data.select_dtypes(include=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
     non_numeric_cols = data.select_dtypes(exclude=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
-
+    
+    # Replace infinity values with NaN
     data[numeric_cols] = data[numeric_cols].replace([np.inf, -np.inf], np.nan)
+    
+    print("Preprocessing data...")
+    # Impute : replace NaN with mean for numeric columns and most frequent value for non-numeric columns
     data[numeric_cols] = numeric_imputer.transform(data[numeric_cols])
     data[non_numeric_cols] = non_numeric_imputer.transform(data[non_numeric_cols])
+
+    # Scale : standardize numeric columns
     data[numeric_cols] = std_scaler.transform(data[numeric_cols])
 
     vars = ['x5', 'x31', 'x81', 'x82']
@@ -66,6 +73,8 @@ def preprocess_data(data, numeric_imputer, non_numeric_imputer, std_scaler):
 def run_preprocess(input_data):
     if isinstance(input_data, str):
         data = pd.read_csv(input_data)
+        if 'y' in data.columns:
+            data = data.drop(columns=['y']) # Remove target variable if present
     elif isinstance(input_data, dict):
         data = pd.DataFrame([input_data])
     elif isinstance(input_data, pd.DataFrame):
@@ -95,10 +104,5 @@ def run_preprocess(input_data):
 
 
 # Load and preprocess training data for fitting imputer and scaler
-train_df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_train.csv')
-train_df = initial_preprocess(train_df)
-numeric_imputer, non_numeric_imputer, std_scaler = create_preprocessors(train_df)
+processed_data = run_preprocess('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
 
-# Load the test data
-test_df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
-test_df = initial_preprocess(test_df)
