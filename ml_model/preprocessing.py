@@ -1,39 +1,58 @@
 import numpy as np
 import pandas as pd
+import pickle
+import os
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
-# Function for initial cleanup and conversion
 def initial_preprocess(df):
     for col in ['x12', 'x63']:
         if col in df.columns:
-            df[col] = df[col].replace({'\$': '', ',': '', '\(': '-', '\)': '','%':''}, regex=True).astype(float)
+            df[col] = df[col].replace({'\$': '', ',': '', '\(': '-', '\)': '', '%':''}, regex=True).astype(float)
     return df
 
-# Function to preprocess data for imputation and scaling
-def preprocess_data(data, numeric_imputer, non_numeric_imputer, std_scaler):
-    # Convert the dictionary to a DataFrame
-    #data = pd.DataFrame([features_dict])
+def create_preprocessors(data_source):
+    if isinstance(data_source, str):
+        train_df = pd.read_csv(data_source)
+    else:
+        train_df = data_source
 
+    train_df = initial_preprocess(train_df)
+
+    numeric_cols = train_df.columns.difference(['x5', 'x31', 'x81', 'x82', 'y'])
+    non_numeric_cols = ['x5', 'x31', 'x81', 'x82']
+
+    numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+    numeric_imputer.fit(train_df[numeric_cols])
+
+    non_numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+    non_numeric_imputer.fit(train_df[non_numeric_cols])
+
+    train_imputed = pd.DataFrame(numeric_imputer.transform(train_df[numeric_cols]), columns=numeric_cols)
+    std_scaler = StandardScaler()
+    std_scaler.fit(train_imputed)
+
+    # Save imputers and scaler
+    with open('numeric_imputer.pkl', 'wb') as f:
+        pickle.dump(numeric_imputer, f)
+    with open('non_numeric_imputer.pkl', 'wb') as f:
+        pickle.dump(non_numeric_imputer, f)
+    with open('std_scaler.pkl', 'wb') as f:
+        pickle.dump(std_scaler, f)
+
+    return numeric_imputer, non_numeric_imputer, std_scaler
+
+def preprocess_data(data, numeric_imputer, non_numeric_imputer, std_scaler):
     data = initial_preprocess(data)
 
-    # Separate numeric and non-numeric columns, excluding dummy variables
     numeric_cols = data.select_dtypes(include=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
     non_numeric_cols = data.select_dtypes(exclude=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
 
-    # Handle NaN and infinity values for numeric columns
     data[numeric_cols] = data[numeric_cols].replace([np.inf, -np.inf], np.nan)
-    
-    # Transform numeric columns using already fitted imputer
     data[numeric_cols] = numeric_imputer.transform(data[numeric_cols])
-
-    # Handle NaN for non-numeric columns
     data[non_numeric_cols] = non_numeric_imputer.transform(data[non_numeric_cols])
-
-    # Standardization for numeric columns
     data[numeric_cols] = std_scaler.transform(data[numeric_cols])
 
-    # Create dummies for specified categorical variables
     vars = ['x5', 'x31', 'x81', 'x82']
     for var in vars:
         if var in data.columns:
@@ -44,41 +63,42 @@ def preprocess_data(data, numeric_imputer, non_numeric_imputer, std_scaler):
 
     return data
 
+def run_preprocess(input_data):
+    if isinstance(input_data, str):
+        data = pd.read_csv(input_data)
+    elif isinstance(input_data, dict):
+        data = pd.DataFrame([input_data])
+    elif isinstance(input_data, pd.DataFrame):
+        data = input_data
+    else:
+        raise ValueError("Input data must be a string (URL), dictionary, or DataFrame.")
+
+    # Check if imputers and scaler are available
+    if (os.path.exists('numeric_imputer.pkl') and 
+        os.path.exists('non_numeric_imputer.pkl') and 
+        os.path.exists('std_scaler.pkl')):
+        with open('numeric_imputer.pkl', 'rb') as f:
+            numeric_imputer = pickle.load(f)
+        with open('non_numeric_imputer.pkl', 'rb') as f:
+            non_numeric_imputer = pickle.load(f)
+        with open('std_scaler.pkl', 'rb') as f:
+            std_scaler = pickle.load(f)
+    else:
+        # If not, create them using the default training data
+        default_train_url = 'https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_train.csv'
+        numeric_imputer, non_numeric_imputer, std_scaler = create_preprocessors(default_train_url)
+
+    return preprocess_data(data, numeric_imputer, non_numeric_imputer, std_scaler)
+
+# Example usage
+# processed_data = run_preprocess('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
+
+
 # Load and preprocess training data for fitting imputer and scaler
 train_df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_train.csv')
 train_df = initial_preprocess(train_df)
+numeric_imputer, non_numeric_imputer, std_scaler = create_preprocessors(train_df)
 
 # Load the test data
 test_df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
 test_df = initial_preprocess(test_df)
-
-# Find common columns in training and test data and convert to a list
-common_columns = list(set(train_df.columns).intersection(set(test_df.columns)))
-
-# Align columns in training data with test data
-train_df = train_df[common_columns]
-
-# Fit the numeric imputer
-numeric_cols = list(set(common_columns).difference(['x5', 'x31', 'x81', 'x82', 'y']))
-numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
-numeric_imputer.fit(train_df[numeric_cols])
-
-# Fit the non-numeric imputer for categorical variables
-non_numeric_cols = ['x5', 'x31', 'x81', 'x82']
-non_numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
-non_numeric_imputer.fit(train_df[non_numeric_cols])
-
-# Fit the scaler
-train_imputed = pd.DataFrame(numeric_imputer.transform(train_df[numeric_cols]), columns=numeric_cols)
-std_scaler = StandardScaler()
-std_scaler.fit(train_imputed)
-
-# Test
-# Ensure that the columns in test_df are exactly the same as in train_df
-# Preprocess the test data using the fitted imputer and scaler
-print("HERE !")
-test_df = preprocess_data(test_df, numeric_imputer, non_numeric_imputer, std_scaler)
-
-# Check for NaN or infinity values in processed_data
-if test_df.isnull().values.any() or np.isinf(test_df).any():
-    raise ValueError("Invalid input data after preprocessing.")
