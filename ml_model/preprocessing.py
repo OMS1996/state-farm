@@ -7,16 +7,9 @@ imputer = SimpleImputer()  # Replace with the actual imputer used
 std_scaler = StandardScaler()  # Replace with the actual scaler used
 
 def preprocess_data(features_dict):
+    
     # Convert the dictionary to a DataFrame
     data = pd.DataFrame([features_dict])
-
-    # Handling missing features (if any)
-    # This step depends on how you want to handle missing features
-    # Example: Fill missing features with NaNs or default values
-    expected_features = ['x0', 'x1', 'x2', ...]  # Add all expected features here
-    for feature in expected_features:
-        if feature not in data.columns:
-            data[feature] = float('nan')  # or a default value
 
     # Imputation and Standardization
     imputed_data = pd.DataFrame(imputer.transform(data), columns=data.columns)
