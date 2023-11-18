@@ -11,9 +11,11 @@ def initial_preprocess(df):
     return df
 
 # Function to preprocess data for imputation and scaling
-def preprocess_data(features_dict, numeric_imputer, non_numeric_imputer, std_scaler):
+def preprocess_data(data, numeric_imputer, non_numeric_imputer, std_scaler):
     # Convert the dictionary to a DataFrame
-    data = pd.DataFrame([features_dict])
+    #data = pd.DataFrame([features_dict])
+
+    data = initial_preprocess(data)
 
     # Separate numeric and non-numeric columns, excluding dummy variables
     numeric_cols = data.select_dtypes(include=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
@@ -72,9 +74,8 @@ std_scaler = StandardScaler()
 std_scaler.fit(train_imputed)
 
 # Test
-
+# Ensure that the columns in test_df are exactly the same as in train_df
 # Preprocess the test data using the fitted imputer and scaler
-test_df = initial_preprocess(test_df)
 print("HERE !")
 test_df = preprocess_data(test_df, numeric_imputer, non_numeric_imputer, std_scaler)
 
