@@ -1,10 +1,14 @@
 # Pydantic models for request and response data
-from typing import Dict
+from typing import List, Dict
 from pydantic import BaseModel
 
+class SinglePredictionInput(BaseModel):
+    features: Dict[str, float]
+
 class PredictionInput(BaseModel):
-    features: Dict[str, float]  # Accepting a dictionary of features
+    data: List[SinglePredictionInput]
 
 class PredictionOutput(BaseModel):
     probability: float
-    predicted_class: str  # Adjust based on your classification labels
+    predicted_class: str
+
