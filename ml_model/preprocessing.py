@@ -74,9 +74,10 @@ std_scaler.fit(train_imputed)
 # Test
 
 # Preprocess the test data using the fitted imputer and scaler
-test_data = test_df.to_dict(orient='records')
-processed_data = [preprocess_data(record, numeric_imputer, non_numeric_imputer, std_scaler) for record in test_data]
+test_df = initial_preprocess(test_df)
+print("HERE !")
+test_df = preprocess_data(test_df, numeric_imputer, non_numeric_imputer, std_scaler)
 
-# View the processed data
-for processed_record in processed_data:
-    print(processed_record.head())
+# Check for NaN or infinity values in processed_data
+if test_df.isnull().values.any() or np.isinf(test_df).any():
+    raise ValueError("Invalid input data after preprocessing.")
