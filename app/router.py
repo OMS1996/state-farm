@@ -3,12 +3,17 @@ from fastapi import APIRouter, HTTPException
 from .models import PredictionInput, PredictionOutput
 from ml_model.model import load_model, predict
 from ml_model.preprocessing import preprocess_data
-from dependencies import MODEL_PATH
+from .dependencies import MODEL_PATH
 
 router = APIRouter()
 
 # Load your model
 model = load_model(MODEL_PATH)
+
+# Default endpoint
+@router.get("/")
+def root():
+    return {"message": "Welcome to the Machine Learning API! By Omar Hussein  Please go to /docs for the API documentation."}
 
 @router.post("/predict", response_model=PredictionOutput)
 async def get_prediction(input_data: PredictionInput):

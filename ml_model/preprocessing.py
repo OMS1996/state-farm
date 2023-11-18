@@ -11,7 +11,7 @@ def preprocess_data(features_dict):
     # Convert the dictionary to a DataFrame
     data = pd.DataFrame([features_dict])
 
-    # Imputation and Standardization
+    # Imputation and Standardization.
     imputed_data = pd.DataFrame(imputer.transform(data), columns=data.columns)
     standardized_data = pd.DataFrame(std_scaler.transform(imputed_data), columns=imputed_data.columns)
 
