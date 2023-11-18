@@ -3,31 +3,26 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
-# Assuming imputer and scaler are already fitted and available
-numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='mean')  # Imputer for numeric columns
-non_numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='most_frequent')  # Imputer for non-numeric columns
-std_scaler = StandardScaler()  # Replace with the actual scaler used
+# Function for initial cleanup and conversion
+def initial_preprocess(df):
+    for col in ['x12', 'x63']:
+        if col in df.columns:
+            df[col] = df[col].replace({'\$': '', ',': '', '\(': '-', '\)': '','%':''}, regex=True).astype(float)
+    return df
 
-def preprocess_data(features_dict):
+# Function to preprocess data for imputation and scaling
+def preprocess_data(features_dict, numeric_imputer, non_numeric_imputer, std_scaler):
     # Convert the dictionary to a DataFrame
     data = pd.DataFrame([features_dict])
 
-    # Feature engineering for money and percents
-    for col in ['x12', 'x63']:
-        if col in data.columns:
-            data[col] = data[col].replace({'\$': '', ',': '', '\(': '-', '\)': '','%':''}, regex=True).astype(float)
-
-    # Separate numeric and non-numeric columns
-    numeric_cols = data.select_dtypes(include=['number']).columns
-    non_numeric_cols = data.select_dtypes(exclude=['number']).columns
+    # Separate numeric and non-numeric columns, excluding dummy variables
+    numeric_cols = data.select_dtypes(include=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
+    non_numeric_cols = data.select_dtypes(exclude=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
 
     # Handle NaN and infinity values for numeric columns
     data[numeric_cols] = data[numeric_cols].replace([np.inf, -np.inf], np.nan)
     
-    # Fit the numeric imputer to the data
-    numeric_imputer.fit(data[numeric_cols])
-    
-    # Transform numeric columns
+    # Transform numeric columns using already fitted imputer
     data[numeric_cols] = numeric_imputer.transform(data[numeric_cols])
 
     # Handle NaN for non-numeric columns
@@ -36,7 +31,7 @@ def preprocess_data(features_dict):
     # Standardization for numeric columns
     data[numeric_cols] = std_scaler.transform(data[numeric_cols])
 
-    # Handling variables for dummy creation
+    # Create dummies for specified categorical variables
     vars = ['x5', 'x31', 'x81', 'x82']
     for var in vars:
         if var in data.columns:
@@ -47,11 +42,41 @@ def preprocess_data(features_dict):
 
     return data
 
+# Load and preprocess training data for fitting imputer and scaler
+train_df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_train.csv')
+train_df = initial_preprocess(train_df)
 
-# Load the CSV file once for all tests
-df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
+# Load the test data
+test_df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
+test_df = initial_preprocess(test_df)
 
-# Try it on all the data
-test_data = df.to_dict(orient='records')
-processed_data = preprocess_data(test_data)
-print(processed_data.head())
+# Find common columns in training and test data and convert to a list
+common_columns = list(set(train_df.columns).intersection(set(test_df.columns)))
+
+# Align columns in training data with test data
+train_df = train_df[common_columns]
+
+# Fit the numeric imputer
+numeric_cols = list(set(common_columns).difference(['x5', 'x31', 'x81', 'x82', 'y']))
+numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='mean')
+numeric_imputer.fit(train_df[numeric_cols])
+
+# Fit the non-numeric imputer for categorical variables
+non_numeric_cols = ['x5', 'x31', 'x81', 'x82']
+non_numeric_imputer = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+non_numeric_imputer.fit(train_df[non_numeric_cols])
+
+# Fit the scaler
+train_imputed = pd.DataFrame(numeric_imputer.transform(train_df[numeric_cols]), columns=numeric_cols)
+std_scaler = StandardScaler()
+std_scaler.fit(train_imputed)
+
+# Test
+
+# Preprocess the test data using the fitted imputer and scaler
+test_data = test_df.to_dict(orient='records')
+processed_data = [preprocess_data(record, numeric_imputer, non_numeric_imputer, std_scaler) for record in test_data]
+
+# View the processed data
+for processed_record in processed_data:
+    print(processed_record.head())
