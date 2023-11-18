@@ -14,7 +14,7 @@ model = load_model(MODEL_PATH)
 # Default endpoint
 @router.get("/")
 def root():
-    return {"message": "Welcome to the Machine Learning API! By Omar Hussein  Please go to /docs for the API documentation."}
+    return {"message": "Welcome to the Machine Learning API! By Omar M. Hussein  Please go to /docs for the API documentation."}
 
 @router.post("/predict", response_model=List[PredictionOutput])
 async def get_prediction(input_data: PredictionInput):
