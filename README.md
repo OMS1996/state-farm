@@ -22,10 +22,10 @@ To isolate project dependencies, it's a good practice to create a virtual enviro
 bash
 Copy code
 # Navigate to the project directory
-cd state-farm
+```cd state-farm```
 
 # Create a virtual environment (Python 3.9+)
-python3 -m venv venv
+```python3 -m venv venv```
 
 # Activate the virtual environment
 source venv/bin/activate  # On Windows, use: venv\Scripts\activate
@@ -68,7 +68,7 @@ To run the FastAPI application using Uvicorn, you can use the following command:
 
 bash
 Copy code
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload```
 Make sure to run this command in the root directory of your FastAPI project, where the app module is located. Adjust the parameters (e.g., --host, --port) to match your specific setup if necessary.
 
 Deployment Steps
