@@ -9,3 +9,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
 API_PREFIX = "/api"
 BASE_URL = "http://localhost:8000"
 
+# Data URLs
+TRAIN_DATA_URL = "https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_train.csv"
+TEST_DATA_URL = "https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv"
+

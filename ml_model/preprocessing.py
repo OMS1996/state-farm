@@ -37,7 +37,7 @@ def create_preprocessors(data_source: Union[str, pd.DataFrame]):
 
     return numeric_imputer, std_scaler
 
-def preprocess_data(data, numeric_imputer, std_scaler):
+def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImputer, std_scaler: StandardScaler) -> pd.DataFrame:
     """
     Preprocesses the input data by performing the following steps:
     1. Initial preprocessing of the data.
@@ -47,13 +47,18 @@ def preprocess_data(data, numeric_imputer, std_scaler):
     5. Creating dummy variables for categorical variables.
     
     Parameters:
-    - data (pandas.DataFrame): The input data to be preprocessed.
-    - numeric_imputer (sklearn.impute.SimpleImputer): The imputer object used for imputing missing values in numeric columns.
-    - std_scaler (sklearn.preprocessing.StandardScaler): The scaler object used for scaling numeric columns.
+    - data (Union[Dict, pd.DataFrame]): The input data to be preprocessed.
+    - numeric_imputer (SimpleImputer): The imputer object used for imputing missing values in numeric columns.
+    - std_scaler (StandardScaler): The scaler object used for scaling numeric columns.
     
     Returns:
-    - preprocessed_data (pandas.DataFrame): The preprocessed data.
+    - preprocessed_data (pd.DataFrame): The preprocessed data.
     """
+    # Convert dictionary to DataFrame if necessary
+    if isinstance(data, Dict):
+        data = pd.DataFrame([data])
+    elif not isinstance(data, pd.DataFrame):
+        raise ValueError("Input data must be a dictionary or DataFrame.")
     
     data = initial_preprocess(data) # Initial preprocessing
 
