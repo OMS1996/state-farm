@@ -6,7 +6,7 @@ This repository contains the model, EDA, code and instructions for deploying a m
 Prerequisites
 Before getting started, ensure you have the following prerequisites installed on your system:
 
-# Python (version 3.9 or higher)
+# Python (version 3.7 or higher)
 Git (optional, but recommended)
 Clone the Repository
 If you have Git installed, you can clone this repository to your local machine using the following command:

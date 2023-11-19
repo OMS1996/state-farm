@@ -114,3 +114,34 @@ def run_preprocess(input_data):
 
 # Load and preprocess training data for fitting imputer and scaler
 processed_data = run_preprocess('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
+
+# Save processed data
+#processed_data.to_csv('processed_data.csv', index=False)
+
+def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
+    """
+    Converts a DataFrame into a list of dictionaries.
+
+    Parameters:
+    - df (pd.DataFrame): The DataFrame to convert.
+
+    Returns:
+    - List[Dict[str, float]]: A list of dictionaries, where each dictionary represents a row from the DataFrame.
+    """
+
+    # Convert DataFrame to a list of dictionaries
+    dict_list = df.to_dict()
+
+    return dict_list
+
+def dict_list_to_dataframe(dict_list: List[Dict[str, float]]) -> pd.DataFrame:
+    """
+    Converts a list of dictionaries to a pandas DataFrame.
+
+    Parameters:
+    - dict_list (List[Dict[str, float]]): A list of dictionaries, where each dictionary represents a row of data.
+
+    Returns:
+    - pd.DataFrame: A DataFrame containing the data from the list of dictionaries.
+    """
+    return pd.DataFrame(dict_list)
