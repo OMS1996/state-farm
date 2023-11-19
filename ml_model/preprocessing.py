@@ -121,16 +121,10 @@ processed_data = run_preprocess('https://raw.githubusercontent.com/OMS1996/state
 def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
     Converts a DataFrame into a list of dictionaries.
-
-    Parameters:
-    - df (pd.DataFrame): The DataFrame to convert.
-
-    Returns:
-    - List[Dict[str, float]]: A list of dictionaries, where each dictionary represents a row from the DataFrame.
     """
 
     # Convert DataFrame to a list of dictionaries
-    dict_list = df.to_dict()
+    dict_list = df.to_dict(orient='records')
 
     return dict_list
 
@@ -145,3 +139,12 @@ def dict_list_to_dataframe(dict_list: List[Dict[str, float]]) -> pd.DataFrame:
     - pd.DataFrame: A DataFrame containing the data from the list of dictionaries.
     """
     return pd.DataFrame(dict_list)
+
+
+# dataframe to dict list
+
+# Load the CSV file once for all tests'
+df = pd.read_csv("https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv")
+single_input = dataframe_to_dict_list(df[0:15])
+
+print(single_input)
