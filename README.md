@@ -40,7 +40,7 @@ This command will install all the necessary libraries, including scikit-learn an
 Project Structure
 The project is structured as follows:
 
-
+```
 # state-farm/
 │
 ├── app/
@@ -62,6 +62,7 @@ The project is structured as follows:
 ├── Dockerfile               # Dockerfile for containerizing the application
 ├── requirements.txt         # Python dependencies
 └── run_api.sh               # Shell script to run the API using Docker
+```
 Usage
 To run the FastAPI application using Uvicorn, you can use the following command:
 
