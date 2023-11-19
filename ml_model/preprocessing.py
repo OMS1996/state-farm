@@ -12,7 +12,7 @@ def initial_preprocess(df: pd.DataFrame):
             df[col] = df[col].replace({'\$': '', ',': '', '\(': '-', '\)': '', '%':''}, regex=True).astype(float)
     return df
 
-def create_preprocessors(data_source: Union[str, pd.DataFrame]):
+def create_preprocessors(data_source: Union[str, pd.DataFrame] = 'https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_train.csv'):
     if isinstance(data_source, str):
         train_df = pd.read_csv(data_source)
     else:
@@ -62,12 +62,12 @@ def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImpu
     
     data = initial_preprocess(data) # Initial preprocessing
 
+    # 
     numeric_cols = data.select_dtypes(include=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
     
     # Replace infinity values with NaN
     data[numeric_cols] = data[numeric_cols].replace([np.inf, -np.inf], np.nan)
     
-    print("Preprocessing data...")
     # Impute: replace NaN with mean for numeric columns and most frequent value for non-numeric columns
     data[numeric_cols] = numeric_imputer.transform(data[numeric_cols])
 
@@ -114,5 +114,3 @@ def run_preprocess(input_data):
 
 # Load and preprocess training data for fitting imputer and scaler
 processed_data = run_preprocess('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
-
-print("processed_data\n", processed_data)
