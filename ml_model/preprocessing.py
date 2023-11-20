@@ -60,9 +60,10 @@ def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImpu
     elif not isinstance(data, pd.DataFrame):
         raise ValueError("Input data must be a dictionary or DataFrame.")
     
+    # Initial preprocessing
     data = initial_preprocess(data) # Initial preprocessing
 
-    # 
+    # Get numeric columns
     numeric_cols = data.select_dtypes(include=['number']).columns.difference(['x5', 'x31', 'x81', 'x82'])
     
     # Replace infinity values with NaN
@@ -74,6 +75,7 @@ def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImpu
     # Scale: standardize numeric columns
     data[numeric_cols] = std_scaler.transform(data[numeric_cols])
 
+    # Create dummy variables for categorical variables
     vars = ['x5', 'x31', 'x81', 'x82']
     for var in vars:
         if var in data.columns:
@@ -82,10 +84,14 @@ def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImpu
             data.drop(columns=[var], inplace=True)  # Drop the original column
         else:
             print(f"Warning: {var} not found in input data.")
+    
+    # Return preprocessed data as list of dictionaries. (from DataFrame to list of dictionaries)
+    if len(data) > 1:
+        return data.to_dict(orient='records')
+    else:
+        return data.to_dict(orient='records')[0]
 
-    return data
-
-def run_preprocess(input_data):
+def run_preprocess(input_data: Union[str, Dict, pd.DataFrame, pd.Series]):
     """Preprocess input data."""
     if isinstance(input_data, str):
         data = pd.read_csv(input_data)
@@ -95,6 +101,8 @@ def run_preprocess(input_data):
         data = pd.DataFrame([input_data])
     elif isinstance(input_data, pd.DataFrame):
         data = input_data
+    elif isinstance(input_data, pd.Series):
+        data = pd.DataFrame([input_data])
     else:
         raise ValueError("Input data must be a string (URL), dictionary, or DataFrame.")
 
@@ -111,40 +119,3 @@ def run_preprocess(input_data):
         numeric_imputer, std_scaler = create_preprocessors(default_train_url)
 
     return preprocess_data(data, numeric_imputer, std_scaler)
-
-# Load and preprocess training data for fitting imputer and scaler
-processed_data = run_preprocess('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
-
-# Save processed data
-#processed_data.to_csv('processed_data.csv', index=False)
-
-def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
-    """
-    Converts a DataFrame into a list of dictionaries.
-    """
-
-    # Convert DataFrame to a list of dictionaries
-    dict_list = df.to_dict(orient='records')
-
-    return dict_list
-
-def dict_list_to_dataframe(dict_list: List[Dict[str, float]]) -> pd.DataFrame:
-    """
-    Converts a list of dictionaries to a pandas DataFrame.
-
-    Parameters:
-    - dict_list (List[Dict[str, float]]): A list of dictionaries, where each dictionary represents a row of data.
-
-    Returns:
-    - pd.DataFrame: A DataFrame containing the data from the list of dictionaries.
-    """
-    return pd.DataFrame(dict_list)
-
-
-# dataframe to dict list
-
-# Load the CSV file once for all tests'
-df = pd.read_csv("https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv")
-single_input = dataframe_to_dict_list(df[0:15])
-
-print(single_input)

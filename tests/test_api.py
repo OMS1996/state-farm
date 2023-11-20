@@ -20,12 +20,9 @@ def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
 # Load the CSV file once for all tests
 df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
 
-print(df.iloc[5])
-print("ANYTHING")
+
 #single_input = dataframe_to_dict_list(df.iloc[0])
 batch_input = dataframe_to_dict_list(df)
-
-
 
 def test_batch_prediction():
     """
@@ -33,12 +30,10 @@ def test_batch_prediction():
     """
     # Prepare multiple rows of data
     batch_data = dataframe_to_dict_list(df.iloc[:5])
-    payload = {"input_data": json.dumps(batch_data)}
-    print(type(batch_data))
+    payload = {"input_data": batch_data}
     # Make the POST request to the predict endpoint
     try:
         response = requests.post("http://0.0.0.0:8000/predict", json=payload)
-        print(response.json())
     except Exception as e:
         print(e)
 
