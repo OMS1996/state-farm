@@ -71,7 +71,7 @@ def test_batch_prediction():
     
     response = None
     try:
-        response = requests.post("http://0.0.0.0:8000/predict", json=payload)
+        response = requests.post("http://0.0.0.0:1313/predict", json=payload)
         print(f"Status Code: {response.status_code}")
         print(f"Response: {response.text}")
         assert response.status_code == 200

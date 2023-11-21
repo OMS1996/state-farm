@@ -60,13 +60,6 @@ def root():
 @router.post("/predict")
 def get_prediction(input_data: Union[Dict[str, Any], List[Dict[str, Any]]], selected_variables: List[str] = VARIABLES):
 
-    # Change print statements to logger.info() if you want to use the logger
-    logger.info("INSIDE PREDICT FUNCTION")
-    logger.info(f"Input data: {input_data}")
-    logger.info(f"Type of data: {type(input_data)}")
-    logger.info(f"Type of nested data: {type(input_data[0])}")
-
-
     try:    
         # Convert the input data to a DataFrame
         df = pd.DataFrame(input_data)
@@ -77,8 +70,10 @@ def get_prediction(input_data: Union[Dict[str, Any], List[Dict[str, Any]]], sele
         # Select only the columns you trained on
         processed_data = processed_data[selected_variables]
 
-        # Make predictions
-        predictions = model.predict(processed_data)
+        # Make predictions row by row and return as a list of results.
+        for col in processed_data.columns:
+            processed_data[col] = processed_data[col].astype(float)
+        predictions = predict(model, processed_data)
 
         # Format the predictions into a response
         results = [{'probability': pred, 'predicted_class': 'customer_purchased' if pred > 0.5 else 'customer_did_not_purchase'} for pred in predictions]
