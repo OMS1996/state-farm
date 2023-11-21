@@ -4,6 +4,42 @@
 
 This repository contains the resources for deploying a machine learning model as an API for State Farm. It's designed to provide real-time predictions via a logistic regression model. The deployment is streamlined through Docker, emphasizing ease of use and consistency across different environments. Additionally, a CI/CD pipeline is integrated for automated testing and deployment.
 
+## Reasoning
+
+This section explains the critical decisions made in the project, specifically the choice of FastAPI for the API framework and the use of pickle files for storing components like the imputer, standardizer, and model weights.
+
+### Why FastAPI?
+
+FastAPI was chosen as the web framework for a few compelling reasons:
+
+1. **Performance**: FastAPI is one of the fastest web frameworks for Python, thanks to its Starlette foundation for handling asynchronous tasks and Pydantic for data validation.
+2. **Ease of Use**: It offers an intuitive way to define APIs with Python type annotations, leading to less code, fewer bugs, and automatic request data validation.
+3. **Automatic API Documentation**: FastAPI automatically generates interactive API documentation (using Swagger UI), which is incredibly helpful for testing and understanding the API.
+4. **Scalability**: It's well-suited for building high-performance, scalable APIs, which is crucial for handling real-time data processing and prediction tasks.
+
+### Storing Imputer, Standardizer, and Model Weights in Pickle Files
+
+The decision to use pickle files for storing the imputer, standardizer, and model weights was made with the following considerations:
+
+1. **Efficiency**: By serializing these components into pickle files, we avoid the computational overhead of recalculating them every time the API is restarted. This approach significantly speeds up the API's response time.
+2. **Consistency**: Storing these components ensures that the exact preprocessing and model configuration used during training are applied during prediction, maintaining consistency in the model's performance.
+3. **Flexibility and Robustness**: The code is designed to be versatile. If the pickle files are not present (e.g., during the initial setup), the code can still function by creating these components using default or provided training data. This design choice ensures robustness and ease of setup for new users or in different environments.
+
+### Choice of Docker Base Image: `python:3.9-slim-buster`
+
+In the Dockerfile, `python:3.9-slim-buster` was selected as the base image over the standard `python:3.9` image due to the following reasons:
+
+1. **Size Efficiency**: The `slim-buster` variant is significantly smaller in size compared to the standard Python image. This reduced size leads to faster build and deployment times, making the overall development and deployment process more efficient.
+2. **Optimized for Production**: Despite its smaller size, `slim-buster` still contains all the essential tools and libraries required to run Python applications. This makes it an ideal choice for production environments where resource efficiency is important.
+3. **Stability and Security**: Based on Debian Buster, the `slim-buster` image offers a stable and secure environment. It includes necessary security updates while excluding unnecessary packages and files, reducing the potential attack surface of the application.
+
+By choosing `python:3.9-slim-buster`, we ensure that the Docker image is not only efficient in terms of size but also robust and suitable for production use. This choice reflects our commitment to creating an optimized and secure deployment for the State Farm Machine Learning API.
+
+---
+In Short:
+By making these strategic decisions, the project achieves a balance between performance, ease of use, and robustness, ensuring that the API is both efficient and user-friendly.
+
+
 ## Prerequisites
 
 Before beginning, ensure you have Docker installed on your system. Docker will handle the creation of the environment and dependency management, offering a seamless setup experience.
@@ -121,6 +157,61 @@ This project is designed to work with Python version 3.7 or higher. It is crucia
 ## Running the Application
 
 Once you have cloned the repository and ensured the correct Python version is installed, you can run the application using Docker as described in the 'Docker Setup' section above.
+
+## Python Example for Using the Predict Endpoint
+
+The following Python script demonstrates how to send a request to the predict endpoint. This example assumes you have a batch of input data that you wish to make predictions on.
+
+### Prerequisites
+
+Ensure you have Python installed, and the `requests` library is available. You can install the `requests` library using pip if it's not already installed:
+
+```bash
+pip install requests
+```
+
+```
+import requests
+import traceback
+
+# Prepare your batch data
+batch_data = [
+    {"x0": "value1", "x1": "value2", ..., "x99": "value99"},
+    # Add more data points as needed
+]
+
+# Define the list of feature names used in the model
+VARIABLES = ["x0", "x1", ..., "x99"]
+
+# Prepare the payload for the request
+payload = {
+    "input_data": batch_data,
+    "selected_variables": VARIABLES
+}
+
+# Send the request to the predict endpoint
+try:
+    response = requests.post("http://0.0.0.0:1313/predict", json=payload)
+    if response.status_code == 200:
+        # Process the response if it's successful
+        predictions = response.json()
+        print("Predictions:", predictions)
+    else:
+        print(f"Failed to get predictions. Status code: {response.status_code}")
+except Exception as e:
+    # Print the error details
+    traceback.print_exc()
+    print(f"An error occurred: {e}")
+
+# Check if a response was received
+if response is None:
+    print("No response received from the API.")
+
+```
+Running the Script
+Save this script as a .py file.
+Run it using Python in your terminal or command prompt.
+The script will send the request to your FastAPI application and print the predictions received in response.
 
 
 ## Contact

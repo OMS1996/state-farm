@@ -54,11 +54,12 @@ df = pd.read_csv(
 )
 
 
+# THIS IS AN INTENSE TEST BECAUSE I AM USING THE CSV FILE TO TEST THE API.
 def test_batch_prediction():
     # Ensure the DataFrame is in a JSON-compliant format
     df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
 
-    batch_data = dataframe_to_dict_list(df.iloc[:5])
+    batch_data = dataframe_to_dict_list(df)
 
     payload = {
         "input_data": batch_data,  # The batch data you're already preparing
