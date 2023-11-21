@@ -17,6 +17,8 @@ FastAPI was chosen as the web framework for a few compelling reasons:
 3. **Automatic API Documentation**: FastAPI automatically generates interactive API documentation (using Swagger UI), which is incredibly helpful for testing and understanding the API.
 4. **Scalability**: It's well-suited for building high-performance, scalable APIs, which is crucial for handling real-time data processing and prediction tasks.
 
+5. Swagger : Automatic documentation and versetile endpoint testing from /docs endpoint.
+
 ### Storing Imputer, Standardizer, and Model Weights in Pickle Files
 
 The decision to use pickle files for storing the imputer, standardizer, and model weights was made with the following considerations:
