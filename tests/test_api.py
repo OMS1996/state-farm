@@ -36,6 +36,14 @@ VARIABLES = [
     "x56",
 ]
 
+def test_root_endpoint():
+    """
+    Test the root endpoint of the API.
+    """
+    response = requests.get("http://0.0.0.0:1313/")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Welcome to the API! By Omar M. Hussein"}
+
 
 def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
@@ -75,4 +83,27 @@ def test_batch_prediction():
         traceback.print_exc()
 
     if response is None:
-        print("No response received from the API.")
+        print("No response received from the API. Please ensure it is running.")
+
+def test_single_prediction():
+    # Ensure the DataFrame is in a JSON-compliant format
+    df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
+
+    # Single data point
+    batch_data = dataframe_to_dict_list(df.iloc[0:1])
+
+    payload = {
+        "input_data": batch_data,  # The batch data you're already preparing
+        "selected_variables": VARIABLES,  # The list of feature names used in the model
+    }
+
+    response = None
+    try:
+        response = requests.post("http://0.0.0.0:1313/predict", json=payload)
+        assert response.status_code == 200
+    except Exception:
+        # This will print the type, value, and traceback of the current exception
+        traceback.print_exc()
+
+    if response is None:
+        print("No response received from the API. Please ensure it is running.")

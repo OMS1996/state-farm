@@ -150,6 +150,9 @@ This project is designed to work with Python version 3.7 or higher. It is crucia
    - Contains instructions for building the Docker image of the application.
    - Specifies the base Python image, sets up the environment, installs dependencies, and defines the command to run the application.
 
+NOTE:
+Shell Script (run_api.sh): This script should handle starting the Docker container. Make sure it's executable (chmod +x run_api.sh) and well-commented.
+
 9. **`run_api.sh`**:
    - A shell script for running the API using Docker.
    - Simplifies the process of starting the application in a Docker container.
