@@ -6,35 +6,36 @@ import pytest
 import json
 from typing import List, Dict
 import traceback
-#from app.dependencies import BASE_URL, TEST_DATA_URL
-#from ml_model.preprocessing import dataframe_to_dict_list
 
 # variables
-VARIABLES = ['x5_saturday',
- 'x81_July',
- 'x81_December',
- 'x31_japan',
- 'x81_October',
- 'x5_sunday',
- 'x31_asia',
- 'x81_February',
- 'x91',
- 'x81_May',
- 'x5_monday',
- 'x81_September',
- 'x81_March',
- 'x53',
- 'x81_November',
- 'x44',
- 'x81_June',
- 'x12',
- 'x5_tuesday',
- 'x81_August',
- 'x81_January',
- 'x62',
- 'x31_germany',
- 'x58',
- 'x56']
+VARIABLES = [
+    "x5_saturday",
+    "x81_July",
+    "x81_December",
+    "x31_japan",
+    "x81_October",
+    "x5_sunday",
+    "x31_asia",
+    "x81_February",
+    "x91",
+    "x81_May",
+    "x5_monday",
+    "x81_September",
+    "x81_March",
+    "x53",
+    "x81_November",
+    "x44",
+    "x81_June",
+    "x12",
+    "x5_tuesday",
+    "x81_August",
+    "x81_January",
+    "x62",
+    "x31_germany",
+    "x58",
+    "x56",
+]
+
 
 def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
@@ -42,24 +43,26 @@ def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
 
     # Convert DataFrame to a list of dictionaries
-    dict_list = df.to_dict(orient='records')
+    dict_list = df.to_dict(orient="records")
 
     return dict_list
 
+
 # Load the CSV file once for all tests
-df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
+df = pd.read_csv(
+    "https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv"
+)
 
 
 def test_batch_prediction():
-    
     # Ensure the DataFrame is in a JSON-compliant format
     df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
-    
+
     batch_data = dataframe_to_dict_list(df.iloc[:5])
 
     payload = {
-    "input_data": batch_data,  # The batch data you're already preparing
-    "selected_variables": VARIABLES  # The list of feature names used in the model
+        "input_data": batch_data,  # The batch data you're already preparing
+        "selected_variables": VARIABLES,  # The list of feature names used in the model
     }
 
     response = None
@@ -72,4 +75,3 @@ def test_batch_prediction():
 
     if response is None:
         print("No response received from the API.")
-

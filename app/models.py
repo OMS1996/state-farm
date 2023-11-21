@@ -1,5 +1,5 @@
 # Pydantic models for request and response data
-from typing import List, Dict
+from typing import List, Dict, Union
 from pydantic import BaseModel
 
 class SinglePredictionInput(BaseModel):
