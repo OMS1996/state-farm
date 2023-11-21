@@ -1,81 +1,130 @@
-# State Farm Model Deployment
-Overview
-This repository contains the model, EDA, code and instructions for deploying a machine learning model as an API for State Farm. The goal is to make the model accessible through API calls, allowing real-time predictions.
+# State Farm Machine Learning API Deployment
 
-# Setup
-Prerequisites
-Before getting started, ensure you have the following prerequisites installed on your system:
+## Overview
 
-# Python (version 3.7 or higher)
-Git (optional, but recommended)
-Clone the Repository
-If you have Git installed, you can clone this repository to your local machine using the following command:
+This repository contains the resources for deploying a machine learning model as an API for State Farm. It's designed to provide real-time predictions via a logistic regression model. The deployment is streamlined through Docker, emphasizing ease of use and consistency across different environments. Additionally, a CI/CD pipeline is integrated for automated testing and deployment.
 
-bash
-Copy code
-git clone https://github.com/yourusername/state-farm.git
-Replace yourusername with your GitHub username or the repository URL.
+## Prerequisites
 
-Create a Virtual Environment (Optional but Recommended)
-To isolate project dependencies, it's a good practice to create a virtual environment. Here's an example using venv:
+Before beginning, ensure you have Docker installed on your system. Docker will handle the creation of the environment and dependency management, offering a seamless setup experience.
 
-bash
-Copy code
-# Navigate to the project directory
-```cd state-farm```
+## Getting Started
 
-# Create a virtual environment (Python 3.9+)
-```python3 -m venv venv```
+### Clone the Repository
 
-# Activate the virtual environment
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-Install Dependencies
-With the virtual environment activated (if you created one), you can install the required dependencies using pip and the requirements.txt file:
+Clone the repository to your local machine:
 
-bash
-Copy code
-pip install -r requirements.txt
-This command will install all the necessary libraries, including scikit-learn and pandas, based on the versions specified in the requirements.txt file.
+Docker Setup
+The project uses Docker to create a consistent environment:
 
-Project Structure
-The project is structured as follows:
+Build the Docker Image:
+
+```docker build -t state-farm-model .
+```
+
+This command builds a Docker image named state-farm-model based on the instructions in the Dockerfile.
+
+Run the Container:
+
+```docker run -p 1313:1313 state-farm-model
+```
+
+This command runs the Docker container, mapping the container's port 1313 to the local port 1313.
 
 ```
-# state-farm/
+state-farm/
 │
-├── app/
+├── app/                     # FastAPI application
 │   ├── __init__.py
 │   ├── main.py              # Main FastAPI app
-│   ├── models.py            # Pydantic models for request and response data
-│   ├── dependencies.py      # Dependencies, configurations, or constants
-│   └── router.py            # Router for the API endpoints
+│   ├── models.py            # Pydantic models for data
+│   ├── dependencies.py      # Configurations and constants
+│   └── router.py            # API endpoints
 │
-├── ml_model/
+├── ml_model/                # Machine Learning model and preprocessing
 │   ├── __init__.py
-│   ├── model.py             # Code for loading and running the ML model
-│   └── preprocessing.py     # Data preprocessing functions
+│   ├── model.py             # Model loading and prediction
+│   └── preprocessing.py     # Data preprocessing
 │
-├── tests/
+├── tests/                   # Unit tests for the API
 │   ├── __init__.py
-│   └── test_api.py          # Tests for the API endpoints
+│   └── test_api.py          
 │
-├── Dockerfile               # Dockerfile for containerizing the application
+├── Dockerfile               # Dockerfile for containerization
 ├── requirements.txt         # Python dependencies
-└── run_api.sh               # Shell script to run the API using Docker
+└── run_api.sh               # Script to run API using Docker
+
 ```
-Usage
-To run the FastAPI application using Uvicorn, you can use the following command:
 
-bash
-Copy code
-```uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload```
-Make sure to run this command in the root directory of your FastAPI project, where the app module is located. Adjust the parameters (e.g., --host, --port) to match your specific setup if necessary.
+# Continuous Integration and Deployment (CI/CD)
+The project includes a CI/CD pipeline, ensuring automated testing and deployment:
 
-Deployment Steps
-Prepare the Model for Production: Update your code to meet production coding standards, including modularization, code quality, unit testing, and documentation.
+Continuous Integration: Automated tests are run to ensure the codebase's integrity with each commit or pull request.
+Continuous Deployment: Upon successful testing and review, changes are automatically deployed to the production environment.
+The CI/CD pipeline is configured in the DockerToDockerHub.yml file, automating the process from code changes to deployment.
 
-Wrap the Model in an API: Make the model callable via API call on port 1313. The API should accept data in JSON format and return predictions.
+DockerHub Deployment
+Find the Docker image for the project at:
 
-Dockerize the API: Create a Dockerfile to build your API into an image. Write a shell script (run_api.sh) to run your Docker container.
+https://hub.docker.com/r/oms96/state-farm-predict/tags
 
-Optimize for Scalability: Identify opportunities to optimize your deployment for scalability, considering a large number of API calls.
+Repository
+Access the full codebase and resources:
+
+State Farm GitHub Repository : https://github.com/OMS1996/state-farm
+
+## Detailed Setup Instructions
+
+### Python Version Requirement
+
+This project is designed to work with Python version 3.7 or higher. It is crucial to use a compatible Python version to avoid any compatibility issues with the libraries and frameworks used.
+
+### Main Scripts Explanation
+
+1. **`app/main.py`**:
+   - This is the entry point for the FastAPI application.
+   - It sets up and runs the FastAPI server, including routing and initialization.
+
+2. **`app/router.py`**:
+   - Defines the API endpoints and handles the incoming API requests.
+   - Processes input data and calls the prediction functions.
+
+3. **`app/models.py`**:
+   - Contains Pydantic models that define the structure of request and response data for the API.
+   - Ensures consistent and validated data handling.
+
+4. **`app/dependencies.py`**:
+   - Stores configurations, constants, and other dependencies that are used throughout the application.
+   - Helps in managing and organizing settings that are shared across different parts of the application.
+
+5. **`ml_model/model.py`**:
+   - Responsible for loading the machine learning model and running predictions.
+   - Handles the deserialization of the trained model and provides a function for making predictions.
+   NOTE: I did not use it because of time constraints.
+
+6. **`ml_model/preprocessing.py`**:
+   - Contains functions for preprocessing input data before it is fed into the model.
+   - Includes steps like imputation, scaling, and encoding necessary for preparing the data for prediction.
+
+7. **`tests/test_api.py`**:
+   - Includes unit tests for testing the API endpoints.
+   - Ensures the reliability and correctness of the API functionality.
+
+8. **`Dockerfile`**:
+   - Contains instructions for building the Docker image of the application.
+   - Specifies the base Python image, sets up the environment, installs dependencies, and defines the command to run the application.
+
+9. **`run_api.sh`**:
+   - A shell script for running the API using Docker.
+   - Simplifies the process of starting the application in a Docker container.
+
+## Running the Application
+
+Once you have cloned the repository and ensured the correct Python version is installed, you can run the application using Docker as described in the 'Docker Setup' section above.
+
+
+## Contact
+
+For any inquiries or contributions, please contact Omar M. Hussein at omarmoh.said@gmail.com or @OMS1996.
+
+
