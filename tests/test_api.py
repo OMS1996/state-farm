@@ -9,7 +9,32 @@ import traceback
 #from app.dependencies import BASE_URL, TEST_DATA_URL
 #from ml_model.preprocessing import dataframe_to_dict_list
 
-
+# variables
+VARIABLES = ['x5_saturday',
+ 'x81_July',
+ 'x81_December',
+ 'x31_japan',
+ 'x81_October',
+ 'x5_sunday',
+ 'x31_asia',
+ 'x81_February',
+ 'x91',
+ 'x81_May',
+ 'x5_monday',
+ 'x81_September',
+ 'x81_March',
+ 'x53',
+ 'x81_November',
+ 'x44',
+ 'x81_June',
+ 'x12',
+ 'x5_tuesday',
+ 'x81_August',
+ 'x81_January',
+ 'x62',
+ 'x31_germany',
+ 'x58',
+ 'x56']
 
 def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
@@ -33,6 +58,12 @@ def test_batch_prediction():
     
     batch_data = dataframe_to_dict_list(df.iloc[:5])
 
+    payload = {
+    "input_data": batch_data,  # The batch data you're already preparing
+    "selected_variables": VARIABLES  # The list of feature names used in the model
+    }
+
+
     # Print type of data and nested data to ensure it is JSON-compliant
     print(f"\n\nBatch data: {batch_data}")
     print(f"Type of data: {type(batch_data)}")
@@ -40,8 +71,9 @@ def test_batch_prediction():
     
     response = None
     try:
-        response = requests.post("http://0.0.0.0:8000/predict", json=batch_data)
+        response = requests.post("http://0.0.0.0:8000/predict", json=payload)
         print(f"Status Code: {response.status_code}")
+        print(f"Response: {response.text}")
         assert response.status_code == 200
     except Exception:
         # This will print the type, value, and traceback of the current exception
