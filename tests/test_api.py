@@ -52,7 +52,6 @@ df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data
 
 def test_batch_prediction():
     
-    print("INSIDE TEST BATCH PREDICTION")
     # Ensure the DataFrame is in a JSON-compliant format
     df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
     
@@ -63,17 +62,9 @@ def test_batch_prediction():
     "selected_variables": VARIABLES  # The list of feature names used in the model
     }
 
-
-    # Print type of data and nested data to ensure it is JSON-compliant
-    print(f"\n\nBatch data: {batch_data}")
-    print(f"Type of data: {type(batch_data)}")
-    print(f"Type of nested data: {type(batch_data[0])}") 
-    
     response = None
     try:
         response = requests.post("http://0.0.0.0:1313/predict", json=payload)
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.text}")
         assert response.status_code == 200
     except Exception:
         # This will print the type, value, and traceback of the current exception
@@ -82,6 +73,3 @@ def test_batch_prediction():
     if response is None:
         print("No response received from the API.")
 
-
-
-test_batch_prediction()
