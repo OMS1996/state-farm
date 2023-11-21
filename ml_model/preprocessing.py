@@ -6,6 +6,33 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from typing import List, Dict, Union
 
+
+VARIABLES = ['x5_saturday',
+ 'x81_July',
+ 'x81_December',
+ 'x31_japan',
+ 'x81_October',
+ 'x5_sunday',
+ 'x31_asia',
+ 'x81_February',
+ 'x91',
+ 'x81_May',
+ 'x5_monday',
+ 'x81_September',
+ 'x81_March',
+ 'x53',
+ 'x81_November',
+ 'x44',
+ 'x81_June',
+ 'x12',
+ 'x5_tuesday',
+ 'x81_August',
+ 'x81_January',
+ 'x62',
+ 'x31_germany',
+ 'x58',
+ 'x56']
+
 def initial_preprocess(df: pd.DataFrame):
     for col in ['x12', 'x63']:
         if col in df.columns:
@@ -37,7 +64,7 @@ def create_preprocessors(data_source: Union[str, pd.DataFrame] = 'https://raw.gi
 
     return numeric_imputer, std_scaler
 
-def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImputer, std_scaler: StandardScaler) -> pd.DataFrame:
+def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImputer, std_scaler: StandardScaler, selected_features: List = VARIABLES) -> pd.DataFrame:
     """
     Preprocesses the input data by performing the following steps:
     1. Initial preprocessing of the data.
@@ -57,6 +84,8 @@ def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImpu
     # Convert dictionary to DataFrame if necessary
     if isinstance(data, Dict):
         data = pd.DataFrame([data])
+    elif isinstance(data, pd.Series):
+        data = pd.DataFrame([data])
     elif not isinstance(data, pd.DataFrame):
         raise ValueError("Input data must be a dictionary or DataFrame.")
     
@@ -75,6 +104,7 @@ def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImpu
     # Scale: standardize numeric columns
     data[numeric_cols] = std_scaler.transform(data[numeric_cols])
 
+
     # Create dummy variables for categorical variables
     vars = ['x5', 'x31', 'x81', 'x82']
     for var in vars:
@@ -84,12 +114,17 @@ def preprocess_data(data: Union[Dict, pd.DataFrame], numeric_imputer: SimpleImpu
             data.drop(columns=[var], inplace=True)  # Drop the original column
         else:
             print(f"Warning: {var} not found in input data.")
-    
-    # Return preprocessed data as list of dictionaries. (from DataFrame to list of dictionaries)
-    if len(data) > 1:
-        return data.to_dict(orient='records')
-    else:
-        return data.to_dict(orient='records')[0]
+
+        # Add missing dummy variables if they are not in the data
+        for feature in selected_features:
+            if feature not in data.columns:
+                data[feature] = 0  # Add missing feature with default value of 0
+
+        # Ensure that only the selected features are used
+        final_data = data[selected_features]
+
+        return final_data
+
 
 def run_preprocess(input_data: Union[str, Dict, pd.DataFrame, pd.Series]):
     """Preprocess input data."""
@@ -106,6 +141,7 @@ def run_preprocess(input_data: Union[str, Dict, pd.DataFrame, pd.Series]):
     else:
         raise ValueError("Input data must be a string (URL), dictionary, or DataFrame.")
 
+    
     # Check if imputers and scaler are available
     if (os.path.exists('numeric_imputer.pkl') and 
         os.path.exists('std_scaler.pkl')):
@@ -118,4 +154,7 @@ def run_preprocess(input_data: Union[str, Dict, pd.DataFrame, pd.Series]):
         default_train_url = 'https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_train.csv'
         numeric_imputer, std_scaler = create_preprocessors(default_train_url)
 
-    return preprocess_data(data, numeric_imputer, std_scaler)
+    # Preprocess the data
+    preprocessed_data = preprocess_data(data, numeric_imputer, std_scaler)
+
+    return preprocessed_data

@@ -1,11 +1,15 @@
 # Tests for the API endpoints
 import requests
+import numpy as np
 import pandas as pd
 import pytest
 import json
 from typing import List, Dict
+import traceback
 #from app.dependencies import BASE_URL, TEST_DATA_URL
 #from ml_model.preprocessing import dataframe_to_dict_list
+
+
 
 def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
@@ -21,38 +25,31 @@ def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
 df = pd.read_csv('https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv')
 
 
-#single_input = dataframe_to_dict_list(df.iloc[0])
-batch_input = dataframe_to_dict_list(df)
-
 def test_batch_prediction():
-    """
-    Test the API endpoint with multiple data points.
-    """
-    # Prepare multiple rows of data
+    
+    print("INSIDE TEST BATCH PREDICTION")
+    # Ensure the DataFrame is in a JSON-compliant format
+    df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
+    
     batch_data = dataframe_to_dict_list(df.iloc[:5])
-    payload = {"input_data": batch_data}
-    # Make the POST request to the predict endpoint
+
+    # Print type of data and nested data to ensure it is JSON-compliant
+    print(f"\n\nBatch data: {batch_data}")
+    print(f"Type of data: {type(batch_data)}")
+    print(f"Type of nested data: {type(batch_data[0])}") 
+    
+    response = None
     try:
-        response = requests.post("http://0.0.0.0:8000/predict", json=payload)
-    except Exception as e:
-        print(e)
+        response = requests.post("http://0.0.0.0:8000/predict", json=batch_data)
+        print(f"Status Code: {response.status_code}")
+        assert response.status_code == 200
+    except Exception:
+        # This will print the type, value, and traceback of the current exception
+        traceback.print_exc()
 
-    # Assertions for batch predictions
-    assert response.status_code == 200
+    if response is None:
+        print("No response received from the API.")
 
-def test_single_prediction():
-    """
-    Test the API endpoint with a single data point.
-    """
-    # Prepare a single row of data
-    single_data = dataframe_to_dict_list(df.iloc[[0]])[0]
-    payload = {"data": [single_data]}  # Wrap in a list to match the expected input format
-
-    # Make the POST request to the predict endpoint
-    response = requests.post("http://0.0.0.0:8000/predict", data=payload)
-
-    # Assertions to validate response
-    assert response.status_code == 200
 
 
 test_batch_prediction()

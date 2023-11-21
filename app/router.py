@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException
+import traceback
 #from .models import PredictionInput, PredictionOutput
-from typing import List, Dict, Union
+from typing import Any, Dict, List, Union
 from ml_model.model import load_model, predict
 from ml_model.preprocessing import run_preprocess, create_preprocessors
-from .dependencies import MODEL_PATH
+from .dependencies import MODEL_PATH, VARIABLES
 import numpy as np
 import pandas as pd
 
@@ -17,32 +18,73 @@ model = load_model(MODEL_PATH)
 # Assuming you have a mechanism to load these, similar to your model
 numeric_imputer, std_scaler = create_preprocessors()
 
+
+# variables
+VARIABLES = ['x5_saturday',
+ 'x81_July',
+ 'x81_December',
+ 'x31_japan',
+ 'x81_October',
+ 'x5_sunday',
+ 'x31_asia',
+ 'x81_February',
+ 'x91',
+ 'x81_May',
+ 'x5_monday',
+ 'x81_September',
+ 'x81_March',
+ 'x53',
+ 'x81_November',
+ 'x44',
+ 'x81_June',
+ 'x12',
+ 'x5_tuesday',
+ 'x81_August',
+ 'x81_January',
+ 'x62',
+ 'x31_germany',
+ 'x58',
+ 'x56']
+
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 # Health check endpoint
 @router.get("/")
 def root():
     return {"message": "Welcome to the API! By Omar M. Hussein"}
 
+
 @router.post("/predict")
-async def get_prediction(input_data: Union[Dict[str, float], List[Dict[str, float]]]):
-    try:
-        # Convert the input list of dictionaries to a DataFrame
+def get_prediction(input_data: Union[Dict[str, Any], List[Dict[str, Any]]], selected_variables: List[str] = VARIABLES):
+
+    # Change print statements to logger.info() if you want to use the logger
+    logger.info("INSIDE PREDICT FUNCTION")
+    logger.info(f"Input data: {input_data}")
+    logger.info(f"Type of data: {type(input_data)}")
+    logger.info(f"Type of nested data: {type(input_data[0])}")
+
+
+    try:    
+        # Convert the input data to a DataFrame
         df = pd.DataFrame(input_data)
 
         # Preprocess the data
-        processed_data = run_preprocess(df, numeric_imputer, std_scaler)
+        processed_data = run_preprocess(df)
 
-        # Check for NaN or infinity values in processed_data
-        if processed_data.isnull().values.any() or np.isinf(processed_data).any():
-            raise ValueError("Invalid input data after preprocessing.")
+        # Select only the columns you trained on
+        processed_data = processed_data[selected_variables]
 
-        # Make predictions for the entire batch
-        predictions = predict(model, processed_data)
+        # Make predictions
+        predictions = model.predict(processed_data)
 
-        # Format and return the predictions
-        results = [{"probability": pred[0],
-                    "predicted_class": "customer_purchased" if pred[0] > 0.5 else "customer_did_not_purchase"}
-                   for pred in predictions]
+        # Format the predictions into a response
+        results = [{'probability': pred, 'predicted_class': 'customer_purchased' if pred > 0.5 else 'customer_did_not_purchase'} for pred in predictions]
 
         return results
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
