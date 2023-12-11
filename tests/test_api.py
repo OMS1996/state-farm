@@ -57,13 +57,8 @@ def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     
     return dict_list
 
-
-
 # Load the CSV file once for all tests
-df = pd.read_csv(
-    "https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv"
-)
-
+df = pd.read_csv("https://raw.githubusercontent.com/OMS1996/state-farm/main/data/exercise_26_test.csv")
 
 # THIS IS AN INTENSE TEST BECAUSE I AM USING THE CSV FILE TO TEST THE API.
 def test_batch_prediction(df):
