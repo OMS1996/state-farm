@@ -57,17 +57,20 @@ The project uses Docker to create a consistent environment:
 
 Build the Docker Image:
 
-```docker build -t state-farm-model .
-```
+```docker build -t state-farm-model .```
 
 This command builds a Docker image named state-farm-model based on the instructions in the Dockerfile.
 
 Run the Container:
 
-```docker run -p 1313:1313 state-farm-model
-```
+```docker run -p 1313:1313 state-farm-model```
 
 This command runs the Docker container, mapping the container's port 1313 to the local port 1313.
+
+
+if you want to pull it directly from docker hub
+
+```docker run -p 1313:1313 oms96/state-farm-predict```
 
 ```
 state-farm/
