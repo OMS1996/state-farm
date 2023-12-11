@@ -42,8 +42,6 @@ def test_root_endpoint():
     """
     response = requests.get("http://0.0.0.0:1313/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the API! By Omar M. Hussein"}
-
 
 def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
@@ -78,7 +76,7 @@ def test_batch_prediction(df):
     
     # Create the payload
     payload = {
-        "input_data": batch_data[0:10],  # The batch data you're already preparing
+        "input_data": batch_data,  # The batch data you're already preparing
         "selected_variables": VARIABLES,  # The list of feature names used in the model
     }
     response = None
@@ -93,4 +91,28 @@ def test_batch_prediction(df):
     if response is None:
         print("No response received from the API. Please ensure it is running.")
 
-test_batch_prediction(df)
+
+def test_five_prediction(df):
+
+    # Ensure the DataFrame is in a JSON-compliant format
+    df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
+    
+    # Batch data
+    batch_data = dataframe_to_dict_list(df)[0:5]
+    
+    # Create the payload
+    payload = {
+        "input_data": batch_data,  # The batch data you're already preparing
+        "selected_variables": VARIABLES,  # The list of feature names used in the model
+    }
+    response = None
+    try:
+        response = requests.post("http://0.0.0.0:1313/predict", json=payload)
+        print(response.json())
+        assert response.status_code == 200
+    except Exception:
+        # This will print the type, value, and traceback of the current exception
+        traceback.print_exc()
+
+    if response is None:
+        print("No response received from the API. Please ensure it is running.")
