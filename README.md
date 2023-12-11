@@ -159,9 +159,36 @@ Shell Script (run_api.sh): This script should handle starting the Docker contain
    - A shell script for running the API using Docker.
    - Simplifies the process of starting the application in a Docker container.
 
+   First Give Execution Permission to the Script`chmod +x run_api.sh`
+
+
+Execute the Script: `Run your run_api.sh` script. This will build the Docker image and run the container.
+
+What the Script Does
+docker build -t state-farm-predict . : This command builds a Docker image from the Dockerfile in the current directory (.) and tags it with the name state-farm-predict.
+
+docker container run -p 1313:1313 state-farm-predict: This command runs a container from the state-farm-predict image. The -p 1313:1313 flag maps port 1313 of the container to port 1313 on your Mac, allowing you to access the API via localhost:1313.
+
 ## Running the Application
 
 Once you have cloned the repository and ensured the correct Python version is installed, you can run the application using Docker as described in the 'Docker Setup' section above.
+
+After Running the Script
+Check Container Status: You can check if the container is running by using:
+
+```docker ps```
+
+Accessing the API: Once the container is up, you should be able to make requests to your API at http://localhost:1313.
+
+Debugging: If you encounter any issues, check the Docker container logs for any error messages, ALTHOUGH THERE IS ONLY ONE CONTAINER:
+```docker logs [CONTAINER_ID]```
+
+Common Issues on Mac
+Firewall or Network Issues: Sometimes, the Mac firewall or network configurations might block ports. Ensure that port 1313 is open and accessible.
+
+Resource Allocation: Docker on Mac sometimes requires adjusting resource allocations (like memory and CPU) for optimal performance, especially for more intensive applications.
+
+Filesystem Permissions: If your Dockerfile or application accesses local files, ensure that Docker has the necessary permissions to access those directories on your Mac.
 
 ## Python Example for Using the Predict Endpoint
 

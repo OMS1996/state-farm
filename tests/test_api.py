@@ -47,13 +47,18 @@ def test_root_endpoint():
 
 def dataframe_to_dict_list(df: pd.DataFrame) -> List[Dict[str, float]]:
     """
-    Converts a DataFrame into a list of dictionaries.
+    Converts a DataFrame into a list of dictionaries and replaces NaNs with None.
     """
-
-    # Convert DataFrame to a list of dictionaries
-    dict_list = df.to_dict(orient="records")
-
+    dict_list = df.to_dict(orient='records')
+    
+    # Replace NaNs in each dictionary with None
+    for item in dict_list:
+        for key, value in item.items():
+            if pd.isna(value):
+                item[key] = None
+    
     return dict_list
+
 
 
 # Load the CSV file once for all tests
@@ -63,20 +68,23 @@ df = pd.read_csv(
 
 
 # THIS IS AN INTENSE TEST BECAUSE I AM USING THE CSV FILE TO TEST THE API.
-def test_batch_prediction():
+def test_batch_prediction(df):
+
     # Ensure the DataFrame is in a JSON-compliant format
     df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
-
+    
+    # Batch data
     batch_data = dataframe_to_dict_list(df)
-
+    
+    # Create the payload
     payload = {
-        "input_data": batch_data,  # The batch data you're already preparing
+        "input_data": batch_data[0:10],  # The batch data you're already preparing
         "selected_variables": VARIABLES,  # The list of feature names used in the model
     }
-
     response = None
     try:
         response = requests.post("http://0.0.0.0:1313/predict", json=payload)
+        print(response.json())
         assert response.status_code == 200
     except Exception:
         # This will print the type, value, and traceback of the current exception
@@ -85,25 +93,4 @@ def test_batch_prediction():
     if response is None:
         print("No response received from the API. Please ensure it is running.")
 
-def test_single_prediction():
-    # Ensure the DataFrame is in a JSON-compliant format
-    df.replace([np.inf, -np.inf, np.nan], None, inplace=True)
-
-    # Single data point
-    batch_data = dataframe_to_dict_list(df.iloc[0:1])
-
-    payload = {
-        "input_data": batch_data,  # The batch data you're already preparing
-        "selected_variables": VARIABLES,  # The list of feature names used in the model
-    }
-
-    response = None
-    try:
-        response = requests.post("http://0.0.0.0:1313/predict", json=payload)
-        assert response.status_code == 200
-    except Exception:
-        # This will print the type, value, and traceback of the current exception
-        traceback.print_exc()
-
-    if response is None:
-        print("No response received from the API. Please ensure it is running.")
+test_batch_prediction(df)

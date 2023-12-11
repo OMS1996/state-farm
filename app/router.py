@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import traceback
-
-# from .models import PredictionInput, PredictionOutput
+#from .models import PredictionInput, PredictionOutput
 from typing import Any, Dict, List, Union
 from ml_model.model import load_model, predict
 from ml_model.preprocessing import run_preprocess, create_preprocessors
@@ -25,7 +24,6 @@ import logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
 # Health check endpoint
 @router.get("/")
 def root():
@@ -33,11 +31,9 @@ def root():
 
 
 @router.post("/predict")
-def get_prediction(
-    input_data: Union[Dict[str, Any], List[Dict[str, Any]]],
-    selected_variables: List[str] = VARIABLES,
-):
-    try:
+def get_prediction(input_data: Union[Dict[str, Any], List[Dict[str, Any]]], selected_variables: List[str] = VARIABLES):
+
+    try:    
         # Convert the input data to a DataFrame
         df = pd.DataFrame(input_data)
 
@@ -53,15 +49,7 @@ def get_prediction(
         predictions = predict(model, processed_data)
 
         # Format the predictions into a response
-        results = [
-            {
-                "probability": pred,
-                "predicted_class": "customer_purchased"
-                if pred > 0.5
-                else "customer_did_not_purchase",
-            }
-            for pred in predictions
-        ]
+        results = [{'probability': pred, 'predicted_class': 'customer_purchased' if pred > 0.5 else 'customer_did_not_purchase'} for pred in predictions]
 
         return results
     except Exception as e:
