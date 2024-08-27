@@ -251,6 +251,6 @@ The script will send the request to your FastAPI application and print the predi
 
 ## Contact
 
-For any inquiries or contributions, please contact Omar M. Hussein at omarmoh.said@gmail.com or @OMS1996.
+For any inquiries or contributions, please contact Omar M. Hussein
 
 
